@@ -100,7 +100,7 @@ impl Pythagorean48 {
 
     /// Encode a sequence of vectors
     pub fn encode_batch(vectors: &[[f32; 2]]) -> Vec<Vector48> {
-        vectors.iter().map(|(x, y)| Self::encode(*x, *y)).collect()
+        vectors.iter().map(|v| Self::encode(v[0], v[1])).collect()
     }
 }
 

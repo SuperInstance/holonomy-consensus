@@ -181,7 +181,7 @@ impl HolonomyConsensus {
     }
 
     /// Locate a faulty tile by cycle bisection — O(log N)
-    fn locate_fault(&self, cycle: Vec<u64>, bad_holonomy: HolonomyMatrix) -> Option<u64> {
+    fn locate_fault(&self, cycle: Vec<u64>, _bad_holonomy: HolonomyMatrix) -> Option<u64> {
         let mut left = 0usize;
         let mut right = cycle.len();
         
@@ -192,7 +192,7 @@ impl HolonomyConsensus {
             let right_cycle: Vec<u64> = cycle[mid..right].to_vec();
             
             let left_hol = self.compute_cycle_holonomy(&left_cycle);
-            let right_hol = self.compute_cycle_holonomy(&right_cycle);
+            let _right_hol = self.compute_cycle_holonomy(&right_cycle);
             
             if left_hol.deviation() > self.tolerance {
                 right = mid;
