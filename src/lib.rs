@@ -34,6 +34,8 @@
 pub mod consensus;
 pub mod cohomology;
 pub mod encoding;
+#[cfg(test)]
+pub mod benchmarks;
 
 pub use consensus::{HolonomyConsensus, ConsensusResult};
 pub use cohomology::{EmergenceDetector, EmergenceResult};
