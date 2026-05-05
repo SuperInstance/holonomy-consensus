@@ -31,9 +31,9 @@
 //! - Holonomy computation: O(N) per cycle, N = tiles in cycle
 //! - Fault isolation: O(log N) via cycle bisection
 
-mod consensus;
-mod cohomology;
-mod encoding;
+pub mod consensus;
+pub mod cohomology;
+pub mod encoding;
 
 pub use consensus::{HolonomyConsensus, ConsensusResult};
 pub use cohomology::{EmergenceDetector, EmergenceResult};
