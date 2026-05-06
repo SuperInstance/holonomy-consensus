@@ -1,9 +1,0 @@
-[package]
-name = "holonomy-consensus"
-version = "0.1.0"
-edition = "2021"
-description = "Zero-holonomy consensus for fleet coordination — eliminates voting, CRDTs, BFT"
-repository = "https://github.com/SuperInstance/holonomy-consensus"
-
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
