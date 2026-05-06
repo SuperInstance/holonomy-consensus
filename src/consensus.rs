@@ -59,7 +59,7 @@ impl HolonomyMatrix {
 pub struct ConsensusTile {
     pub id: u64,
     pub holonomy: HolonomyMatrix,
-    pub neighbors: Vec<u64>,  // max 12 for rigidity (Laman's theorem)
+    pub neighbors: Vec<u64>,  // Laman's theorem establishes edge count (E=2V-3) but places no upper bound on vertex degree
     pub cycle_id: Option<u64>,
 }
 
