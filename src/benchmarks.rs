@@ -2,8 +2,8 @@
 //!
 //! Validates claims:
 //! - 38ms consensus latency (vs 412ms PBFT)
-//! - 100% emergence detection accuracy (vs 62% ML)
-//! - Any number Byzantine tolerance (vs 1/3 for PBFT)
+//! - Geometric consistency check (not BFT consensus; FLP impossibility applies to async crash fault consensus)
+//! - Holonomy is a structural consistency metric, NOT a Byzantine fault tolerant consensus protocol
 //!
 //! Run with: cargo test --release -- benchmark_
 
@@ -239,7 +239,7 @@ pub fn benchmark_emergence(n_agents: usize, n_connections: usize, n_trials: usiz
     let holonomy_tp = holonomy_detections as f64 / n_trials as f64;
     EmergenceBenchmarkResult {
         holonomy_accuracy: holonomy_tp * 100.0,
-        ml_accuracy: 62.0,
+        ml_accuracy: 0.0, // TODO: run actual ML baseline benchmark (62% was placeholder, never measured)
         holonomy_detection_time_ms: 0.1,
         ml_detection_time_ms: 1200.0,
         holonomy_false_positive: 0.0,
@@ -265,7 +265,11 @@ pub fn benchmark_byzantine_tolerance(n: usize) -> Vec<ByzantineResult> {
         ByzantineResult { approach: "PBFT", max_byzantine_nodes: (n - 1) / 3, total_nodes: n, threshold_fraction: 1.0 / 3.0, message_complexity: n * 4 },
         ByzantineResult { approach: "Raft", max_byzantine_nodes: 0, total_nodes: n, threshold_fraction: 0.0, message_complexity: n * 2 },
         ByzantineResult { approach: "CRDT", max_byzantine_nodes: n - 1, total_nodes: n, threshold_fraction: 1.0, message_complexity: n },
-        ByzantineResult { approach: "Holonomy", max_byzantine_nodes: n - 1, total_nodes: n, threshold_fraction: 1.0, message_complexity: 1 },
+        // NOTE: Holonomy is a geometric consistency CHECK, not BFT consensus.
+        // It detects structural inconsistencies in the constraint graph.
+        // The n-1 claim reflects that geometric checks don't depend on node count,
+        // NOT that it tolerates Byzantine faults in the consensus-theoretic sense.
+        ByzantineResult { approach: "Holonomy (geometric check, not BFT)", max_byzantine_nodes: n - 1, total_nodes: n, threshold_fraction: 1.0, message_complexity: 1 },
     ]
 }
 
