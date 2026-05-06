@@ -9,7 +9,7 @@ pub struct HolonomyMatrix(pub [[f64; 3]; 3]);
 
 impl HolonomyMatrix {
     pub fn identity() -> Self {
-        Self([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]])
+        Self([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
     }
 
     pub fn from_rotation(axis: [f64; 3], angle: f64) -> Self {

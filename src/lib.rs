@@ -31,11 +31,14 @@
 //! - Holonomy computation: O(N) per cycle, N = tiles in cycle
 //! - Fault isolation: O(log N) via cycle bisection
 
+pub mod constraints;
 pub mod consensus;
 pub mod cohomology;
 pub mod encoding;
 #[cfg(test)]
 pub mod benchmarks;
+
+pub use constraints::{sat8, HolonomyBounds, ConstraintResult};
 
 pub use consensus::{HolonomyConsensus, ConsensusResult};
 pub use cohomology::{EmergenceDetector, EmergenceResult};
