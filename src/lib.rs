@@ -35,6 +35,7 @@ pub mod constraints;
 pub mod consensus;
 pub mod cohomology;
 pub mod encoding;
+pub mod zhc_gl9;
 #[cfg(test)]
 pub mod benchmarks;
 
