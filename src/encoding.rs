@@ -37,18 +37,54 @@ impl Vector48 {
         // Format: (x_numerator, x_denominator, y_numerator, y_denominator)
         // so x = x_numer/x_denom, y = y_numer/y_denom, and x²+y²=1
         [
-            (1, 1, 0, 1), (-1, 1, 0, 1), (0, 1, 1, 1), (0, 1, -1, 1),  // Cardinal axes
-            (3, 5, 4, 5), (-3, 5, 4, 5), (3, 5, -4, 5), (-3, 5, -4, 5),  // 3-4-5
-            (4, 5, 3, 5), (-4, 5, 3, 5), (4, 5, -3, 5), (-4, 5, -3, 5),  // 4-3-5
-            (5, 13, 12, 13), (-5, 13, 12, 13), (5, 13, -12, 13), (-5, 13, -12, 13),
-            (12, 13, 5, 13), (-12, 13, 5, 13), (12, 13, -5, 13), (-12, 13, -5, 13),
-            (5, 13, -12, 13), (12, 13, -5, 13), (-5, 13, -12, 13), (-12, 13, -5, 13),
-            (7, 25, 24, 25), (-7, 25, 24, 25), (7, 25, -24, 25), (-7, 25, -24, 25),
-            (24, 25, 7, 25), (-24, 25, 7, 25), (24, 25, -7, 25), (-24, 25, -7, 25),
-            (8, 17, 15, 17), (-8, 17, 15, 17), (8, 17, -15, 17), (-8, 17, -15, 17),
-            (15, 17, 8, 17), (-15, 17, 8, 17), (15, 17, -8, 17), (-15, 17, -8, 17),
-            (9, 41, 40, 41), (-9, 41, 40, 41), (9, 41, -40, 41), (-9, 41, -40, 41),
-            (40, 41, 9, 41), (-40, 41, 9, 41), (40, 41, -9, 41), (-40, 41, -9, 41),
+            (1, 1, 0, 1),
+            (-1, 1, 0, 1),
+            (0, 1, 1, 1),
+            (0, 1, -1, 1), // Cardinal axes
+            (3, 5, 4, 5),
+            (-3, 5, 4, 5),
+            (3, 5, -4, 5),
+            (-3, 5, -4, 5), // 3-4-5
+            (4, 5, 3, 5),
+            (-4, 5, 3, 5),
+            (4, 5, -3, 5),
+            (-4, 5, -3, 5), // 4-3-5
+            (5, 13, 12, 13),
+            (-5, 13, 12, 13),
+            (5, 13, -12, 13),
+            (-5, 13, -12, 13),
+            (12, 13, 5, 13),
+            (-12, 13, 5, 13),
+            (12, 13, -5, 13),
+            (-12, 13, -5, 13),
+            (5, 13, -12, 13),
+            (12, 13, -5, 13),
+            (-5, 13, -12, 13),
+            (-12, 13, -5, 13),
+            (7, 25, 24, 25),
+            (-7, 25, 24, 25),
+            (7, 25, -24, 25),
+            (-7, 25, -24, 25),
+            (24, 25, 7, 25),
+            (-24, 25, 7, 25),
+            (24, 25, -7, 25),
+            (-24, 25, -7, 25),
+            (8, 17, 15, 17),
+            (-8, 17, 15, 17),
+            (8, 17, -15, 17),
+            (-8, 17, -15, 17),
+            (15, 17, 8, 17),
+            (-15, 17, 8, 17),
+            (15, 17, -8, 17),
+            (-15, 17, -8, 17),
+            (9, 41, 40, 41),
+            (-9, 41, 40, 41),
+            (9, 41, -40, 41),
+            (-9, 41, -40, 41),
+            (40, 41, 9, 41),
+            (-40, 41, 9, 41),
+            (40, 41, -9, 41),
+            (-40, 41, -9, 41),
         ]
     }
 
@@ -65,18 +101,18 @@ impl Vector48 {
         // Find closest of 48 directions
         let mut best = 0;
         let mut best_dist = f32::MAX;
-        
+
         for (i, (xn, xd, yn, yd)) in Self::all_directions().iter().enumerate() {
             let dx = x - (*xn as f32 / *xd as f32);
             let dy = y - (*yn as f32 / *yd as f32);
-            let dist = dx*dx + dy*dy;
-            
+            let dist = dx * dx + dy * dy;
+
             if dist < best_dist {
                 best_dist = dist;
                 best = i;
             }
         }
-        
+
         Vector48(best as u8)
     }
 }
@@ -110,19 +146,19 @@ mod tests {
 
     #[test]
     fn test_no_drift() {
-        let original = (0.6_f32, 0.8_f32);  // ~37 degrees
+        let original = (0.6_f32, 0.8_f32); // ~37 degrees
         let encoded = Pythagorean48::encode(original.0, original.1);
         let (decoded_x, decoded_y) = Pythagorean48::decode(encoded);
-        
+
         // After encoding/decoding, we get the EXACT direction
         let (ex, ey) = encoded.to_f32();
         assert!((decoded_x - ex).abs() < 0.001);
         assert!((decoded_y - ey).abs() < 0.001);
-        
+
         // Original and decoded should be close (Pythagorean triple approximation)
         let dx = original.0 - ex;
         let dy = original.1 - ey;
-        assert!(dx*dx + dy*dy < 0.1);  // Within 0.3 radians
+        assert!(dx * dx + dy * dy < 0.1); // Within 0.3 radians
     }
 
     #[test]
@@ -131,7 +167,7 @@ mod tests {
             let v = Vector48(i as u8);
             let (x, y) = v.to_f32();
             // Verify on unit circle
-            let mag = (x*x + y*y).sqrt();
+            let mag = (x * x + y * y).sqrt();
             assert!((mag - 1.0).abs() < 0.001);
         }
     }

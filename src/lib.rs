@@ -31,18 +31,18 @@
 //! - Holonomy computation: O(N) per cycle, N = tiles in cycle
 //! - Fault isolation: O(log N) via cycle bisection
 
-pub mod constraints;
-pub mod consensus;
-pub mod cohomology;
-pub mod encoding;
-pub mod zhc_gl9;
 #[cfg(test)]
 pub mod benchmarks;
+pub mod cohomology;
+pub mod consensus;
+pub mod constraints;
+pub mod encoding;
+pub mod zhc_gl9;
 
-pub use constraints::{sat8, HolonomyBounds, ConstraintResult};
+pub use constraints::{sat8, ConstraintResult, HolonomyBounds};
 
-pub use consensus::{HolonomyConsensus, ConsensusResult};
 pub use cohomology::{EmergenceDetector, EmergenceResult};
+pub use consensus::{ConsensusResult, HolonomyConsensus};
 pub use encoding::{Pythagorean48, Vector48};
 
 /// The 48 exact directions on the unit circle (Pythagorean quantization)

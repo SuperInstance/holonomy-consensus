@@ -104,7 +104,10 @@ impl GL9Matrix {
     /// leaving all other dimensions unchanged. Analogous to SO(3) axis-angle
     /// but generalized to any pair of CI facets.
     pub fn plane_rotation(dim_a: usize, dim_b: usize, angle: f64) -> Self {
-        assert!(dim_a < 9 && dim_b < 9 && dim_a != dim_b, "Invalid plane indices");
+        assert!(
+            dim_a < 9 && dim_b < 9 && dim_a != dim_b,
+            "Invalid plane indices"
+        );
         let mut m = Self::identity();
         let (sin, cos) = angle.sin_cos();
         m.0[dim_a * 9 + dim_a] = cos;
@@ -222,9 +225,7 @@ impl GL9Matrix {
             // Swap rows
             if pivot_row != col {
                 for j in 0..9 {
-                    let tmp = mat[col * 9 + j];
-                    mat[col * 9 + j] = mat[pivot_row * 9 + j];
-                    mat[pivot_row * 9 + j] = tmp;
+                    mat.swap(col * 9 + j, pivot_row * 9 + j);
                 }
                 det = -det;
             }
@@ -397,7 +398,9 @@ impl GL9HolonomyConsensus {
         let mut count = 0usize;
         for i in 0..self.agents.len() {
             for j in (i + 1)..self.agents.len() {
-                total_sim += self.agents[i].intent.cosine_similarity(&self.agents[j].intent);
+                total_sim += self.agents[i]
+                    .intent
+                    .cosine_similarity(&self.agents[j].intent);
                 count += 1;
             }
         }
@@ -439,8 +442,7 @@ impl GL9HolonomyConsensus {
     /// Find fundamental cycles in the agent graph.
     fn find_cycles(&self) -> Vec<Vec<u64>> {
         let mut cycles = Vec::new();
-        let mut seen =
-            std::collections::HashSet::<(u64, u64)>::new();
+        let mut seen = std::collections::HashSet::<(u64, u64)>::new();
 
         for agent in &self.agents {
             for &neighbor in &agent.neighbors {
@@ -531,7 +533,11 @@ impl GL9HolonomyConsensus {
                     }
                 }
             }
-            alignments.push(if count > 0 { sim_sum / count as f64 } else { 1.0 });
+            alignments.push(if count > 0 {
+                sim_sum / count as f64
+            } else {
+                1.0
+            });
         }
 
         (holonomies, alignments)
@@ -607,7 +613,11 @@ mod tests {
         // Single rotation in C1-C3 plane (dims 0, 2) → π/6 radians
         let rot = GL9Matrix::plane_rotation(0, 2, std::f64::consts::FRAC_PI_6);
         let dev = rot.deviation();
-        assert!(dev > 0.01, "Plane rotation should have measurable deviation, got {}", dev);
+        assert!(
+            dev > 0.01,
+            "Plane rotation should have measurable deviation, got {}",
+            dev
+        );
         assert!(dev < 5.0, "Deviation should be bounded");
     }
 
@@ -750,11 +760,24 @@ mod tests {
         let result = IntentVector(transformed);
 
         // After 90° rotation in (0,1) plane: x→0, y→1
-        assert!(result.0[0].abs() < 1e-10, "x should be ~0, got {}", result.0[0]);
-        assert!((result.0[1] - 1.0).abs() < 1e-10, "y should be ~1, got {}", result.0[1]);
+        assert!(
+            result.0[0].abs() < 1e-10,
+            "x should be ~0, got {}",
+            result.0[0]
+        );
+        assert!(
+            (result.0[1] - 1.0).abs() < 1e-10,
+            "y should be ~1, got {}",
+            result.0[1]
+        );
         // Other dims unchanged
         for i in 2..9 {
-            assert!(result.0[i].abs() < 1e-10, "dim {} should be 0, got {}", i, result.0[i]);
+            assert!(
+                result.0[i].abs() < 1e-10,
+                "dim {} should be 0, got {}",
+                i,
+                result.0[i]
+            );
         }
     }
 
@@ -790,7 +813,11 @@ mod tests {
                 id: i,
                 transform: GL9Matrix::plane_rotation(0, 1, 0.01 * (i as f64 + 1.0)),
                 intent,
-                neighbors: if i == 0 { vec![3, 1] } else { vec![i - 1, (i + 1) % 4] },
+                neighbors: if i == 0 {
+                    vec![3, 1]
+                } else {
+                    vec![i - 1, (i + 1) % 4]
+                },
             });
         }
 
@@ -804,13 +831,21 @@ mod tests {
                 id: i,
                 transform: GL9Matrix::plane_rotation((i as usize) % 9, ((i as usize) + 3) % 9, 0.5),
                 intent,
-                neighbors: if i == 4 { vec![7, 5] } else { vec![i - 1, if i == 7 { 4 } else { i + 1 }] },
+                neighbors: if i == 4 {
+                    vec![7, 5]
+                } else {
+                    vec![i - 1, if i == 7 { 4 } else { i + 1 }]
+                },
             });
         }
 
         let alignment = consensus.compute_alignment();
         // Alignment should be between 0 and 1
-        assert!(alignment >= 0.0 && alignment <= 1.0, "Alignment out of range: {}", alignment);
+        assert!(
+            alignment >= 0.0 && alignment <= 1.0,
+            "Alignment out of range: {}",
+            alignment
+        );
 
         // The 9D version should at least not DESTROY correlation
         // (we can't guarantee strong correlation with this small sample,
@@ -854,17 +889,29 @@ mod tests {
 
         // In 9D, these are clearly different
         let sim_9d = v1n.cosine_similarity(&v2n);
-        assert!(sim_9d < 0.95, "9D should distinguish these vectors (sim={})", sim_9d);
+        assert!(
+            sim_9d < 0.95,
+            "9D should distinguish these vectors (sim={})",
+            sim_9d
+        );
 
         // If projected to 3D (dims 0-2 only), they'd look identical
         let v1_3d = [v1.0[0], v1.0[1], v1.0[2]];
         let v2_3d = [v2.0[0], v2.0[1], v2.0[2]];
         let sim_3d: f64 = {
-            let dot = v1_3d.iter().zip(v2_3d.iter()).map(|(a, b)| a * b).sum::<f64>();
+            let dot = v1_3d
+                .iter()
+                .zip(v2_3d.iter())
+                .map(|(a, b)| a * b)
+                .sum::<f64>();
             let n1 = v1_3d.iter().map(|x| x * x).sum::<f64>().sqrt();
             let n2 = v2_3d.iter().map(|x| x * x).sum::<f64>().sqrt();
             dot / (n1 * n2)
         };
-        assert!((sim_3d - 1.0).abs() < 1e-10, "3D projection makes them identical (sim={})", sim_3d);
+        assert!(
+            (sim_3d - 1.0).abs() < 1e-10,
+            "3D projection makes them identical (sim={})",
+            sim_3d
+        );
     }
 }

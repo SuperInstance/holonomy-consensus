@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use crate::{consensus::*, cohomology::EmergenceDetector};
+use crate::{cohomology::EmergenceDetector, consensus::*};
 
 /// ======================================================================
 /// BASELINE 1: Simple PBFT Implementation
@@ -119,7 +119,10 @@ struct GCounter {
 
 impl GCounter {
     fn new(node_id: u64) -> Self {
-        Self { node_id, counts: HashMap::new() }
+        Self {
+            node_id,
+            counts: HashMap::new(),
+        }
     }
     fn increment(&mut self) {
         *self.counts.entry(self.node_id).or_insert(0) += 1;
@@ -228,7 +231,11 @@ pub struct EmergenceBenchmarkResult {
     pub ml_false_positive: f64,
 }
 
-pub fn benchmark_emergence(n_agents: usize, n_connections: usize, n_trials: usize) -> EmergenceBenchmarkResult {
+pub fn benchmark_emergence(
+    n_agents: usize,
+    n_connections: usize,
+    n_trials: usize,
+) -> EmergenceBenchmarkResult {
     let mut holonomy_detections = 0;
     for _ in 0..n_trials {
         let result = EmergenceDetector::detect(n_agents, n_connections, 1);
@@ -262,14 +269,38 @@ pub struct ByzantineResult {
 
 pub fn benchmark_byzantine_tolerance(n: usize) -> Vec<ByzantineResult> {
     vec![
-        ByzantineResult { approach: "PBFT", max_byzantine_nodes: (n - 1) / 3, total_nodes: n, threshold_fraction: 1.0 / 3.0, message_complexity: n * 4 },
-        ByzantineResult { approach: "Raft", max_byzantine_nodes: 0, total_nodes: n, threshold_fraction: 0.0, message_complexity: n * 2 },
-        ByzantineResult { approach: "CRDT", max_byzantine_nodes: n - 1, total_nodes: n, threshold_fraction: 1.0, message_complexity: n },
+        ByzantineResult {
+            approach: "PBFT",
+            max_byzantine_nodes: (n - 1) / 3,
+            total_nodes: n,
+            threshold_fraction: 1.0 / 3.0,
+            message_complexity: n * 4,
+        },
+        ByzantineResult {
+            approach: "Raft",
+            max_byzantine_nodes: 0,
+            total_nodes: n,
+            threshold_fraction: 0.0,
+            message_complexity: n * 2,
+        },
+        ByzantineResult {
+            approach: "CRDT",
+            max_byzantine_nodes: n - 1,
+            total_nodes: n,
+            threshold_fraction: 1.0,
+            message_complexity: n,
+        },
         // NOTE: Holonomy is a geometric consistency CHECK, not BFT consensus.
         // It detects structural inconsistencies in the constraint graph.
         // The n-1 claim reflects that geometric checks don't depend on node count,
         // NOT that it tolerates Byzantine faults in the consensus-theoretic sense.
-        ByzantineResult { approach: "Holonomy (geometric check, not BFT)", max_byzantine_nodes: n - 1, total_nodes: n, threshold_fraction: 1.0, message_complexity: 1 },
+        ByzantineResult {
+            approach: "Holonomy (geometric check, not BFT)",
+            max_byzantine_nodes: n - 1,
+            total_nodes: n,
+            threshold_fraction: 1.0,
+            message_complexity: 1,
+        },
     ]
 }
 
@@ -291,34 +322,62 @@ mod benchmarks {
 
         println!("[1/4] Running PBFT benchmark...");
         let pbft = benchmark_pbft(n_nodes, n_rounds);
-        println!("  PBFT: {:.2}ms avg latency, {:.0} tx/s", pbft.avg_latency_ms, pbft.throughput_tps);
+        println!(
+            "  PBFT: {:.2}ms avg latency, {:.0} tx/s",
+            pbft.avg_latency_ms, pbft.throughput_tps
+        );
 
         println!("[2/4] Running Raft benchmark...");
         let raft = benchmark_raft(n_nodes, n_rounds);
-        println!("  Raft: {:.2}ms avg latency, {:.0} tx/s", raft.avg_latency_ms, raft.throughput_tps);
+        println!(
+            "  Raft: {:.2}ms avg latency, {:.0} tx/s",
+            raft.avg_latency_ms, raft.throughput_tps
+        );
 
         println!("[3/4] Running CRDT benchmark...");
         let crdt = benchmark_crdt(n_nodes, n_rounds);
-        println!("  CRDT: {:.2}ms avg latency, {:.0} tx/s", crdt.avg_latency_ms, crdt.throughput_tps);
+        println!(
+            "  CRDT: {:.2}ms avg latency, {:.0} tx/s",
+            crdt.avg_latency_ms, crdt.throughput_tps
+        );
 
         println!("[4/4] Running Holonomy-Consensus benchmark...");
         let holonomy = benchmark_holonomy(n_tiles, n_rounds);
-        println!("  Holonomy: {:.2}ms avg latency, {:.0} tx/s", holonomy.avg_latency_ms, holonomy.throughput_tps);
+        println!(
+            "  Holonomy: {:.2}ms avg latency, {:.0} tx/s",
+            holonomy.avg_latency_ms, holonomy.throughput_tps
+        );
 
         println!("\n=== EMERGENCE DETECTION ===");
         let emergence = benchmark_emergence(1024, 12000, 1000);
-        println!("  Holonomy: {:.0}% true positive, {:.1}% false positive", emergence.holonomy_accuracy, emergence.holonomy_false_positive);
-        println!("  ML (JC1): {:.0}% true positive, {:.1}% false positive", emergence.ml_accuracy, emergence.ml_false_positive);
+        println!(
+            "  Holonomy: {:.0}% true positive, {:.1}% false positive",
+            emergence.holonomy_accuracy, emergence.holonomy_false_positive
+        );
+        println!(
+            "  ML (JC1): {:.0}% true positive, {:.1}% false positive",
+            emergence.ml_accuracy, emergence.ml_false_positive
+        );
 
         println!("\n=== BYZANTINE TOLERANCE ===");
         let byzantine = benchmark_byzantine_tolerance(4);
         for b in &byzantine {
-            println!("  {}: {} max Byzantine nodes ({:.0}% of network)", b.approach, b.max_byzantine_nodes, b.threshold_fraction * 100.0);
+            println!(
+                "  {}: {} max Byzantine nodes ({:.0}% of network)",
+                b.approach,
+                b.max_byzantine_nodes,
+                b.threshold_fraction * 100.0
+            );
         }
 
         println!("\n=== COMPLETE ===");
 
-        assert!(holonomy.avg_latency_ms < pbft.avg_latency_ms, "Holonomy should beat PBFT: {:.2}ms vs {:.2}ms", holonomy.avg_latency_ms, pbft.avg_latency_ms);
+        assert!(
+            holonomy.avg_latency_ms < pbft.avg_latency_ms,
+            "Holonomy should beat PBFT: {:.2}ms vs {:.2}ms",
+            holonomy.avg_latency_ms,
+            pbft.avg_latency_ms
+        );
         assert_eq!(emergence.holonomy_accuracy, 100.0);
         assert!(emergence.ml_accuracy < 100.0);
     }
@@ -329,7 +388,13 @@ mod benchmarks {
         for n in [4, 7, 10, 13] {
             let pbft = benchmark_pbft(n, 100);
             let holonomy = benchmark_holonomy(n * 10, 100);
-            println!("n={}: PBFT {:.2}ms, Holonomy {:.2}ms, speedup {:.1}x", n, pbft.avg_latency_ms, holonomy.avg_latency_ms, pbft.avg_latency_ms / holonomy.avg_latency_ms);
+            println!(
+                "n={}: PBFT {:.2}ms, Holonomy {:.2}ms, speedup {:.1}x",
+                n,
+                pbft.avg_latency_ms,
+                holonomy.avg_latency_ms,
+                pbft.avg_latency_ms / holonomy.avg_latency_ms
+            );
         }
     }
 
@@ -340,9 +405,25 @@ mod benchmarks {
         let raft = benchmark_raft(4, 1000);
         let crdt = benchmark_crdt(4, 1000);
         let holonomy = benchmark_holonomy(100, 1000);
-        println!("PBFT:     {:>8} bytes ({:>6.2} KB)", pbft.memory_bytes, pbft.memory_bytes as f64 / 1024.0);
-        println!("Raft:     {:>8} bytes ({:>6.2} KB)", raft.memory_bytes, raft.memory_bytes as f64 / 1024.0);
-        println!("CRDT:     {:>8} bytes ({:>6.2} KB)", crdt.memory_bytes, crdt.memory_bytes as f64 / 1024.0);
-        println!("Holonomy: {:>8} bytes ({:>6.2} KB)", holonomy.memory_bytes, holonomy.memory_bytes as f64 / 1024.0);
+        println!(
+            "PBFT:     {:>8} bytes ({:>6.2} KB)",
+            pbft.memory_bytes,
+            pbft.memory_bytes as f64 / 1024.0
+        );
+        println!(
+            "Raft:     {:>8} bytes ({:>6.2} KB)",
+            raft.memory_bytes,
+            raft.memory_bytes as f64 / 1024.0
+        );
+        println!(
+            "CRDT:     {:>8} bytes ({:>6.2} KB)",
+            crdt.memory_bytes,
+            crdt.memory_bytes as f64 / 1024.0
+        );
+        println!(
+            "Holonomy: {:>8} bytes ({:>6.2} KB)",
+            holonomy.memory_bytes,
+            holonomy.memory_bytes as f64 / 1024.0
+        );
     }
 }

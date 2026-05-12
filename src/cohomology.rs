@@ -86,10 +86,10 @@ impl EmergenceDetector {
     pub fn from_edge_list(vertices: &[u64], edges: &[(u64, u64)]) -> EmergenceResult {
         let n_vertices = vertices.len();
         let n_edges = edges.len();
-        
+
         // Count components via BFS/DFS
         let n_components = Self::count_components(vertices, edges);
-        
+
         Self::detect(n_vertices, n_edges, n_components)
     }
 
@@ -97,7 +97,7 @@ impl EmergenceDetector {
         if vertices.is_empty() {
             return 0;
         }
-        
+
         let mut adj: std::collections::HashMap<u64, Vec<u64>> = std::collections::HashMap::new();
         for v in vertices {
             adj.entry(*v).or_default();
@@ -106,29 +106,33 @@ impl EmergenceDetector {
             adj.entry(*a).or_default().push(*b);
             adj.entry(*b).or_default().push(*a);
         }
-        
+
         let mut visited = std::collections::HashSet::new();
         let mut components = 0;
-        
+
         for v in vertices {
             if !visited.contains(v) {
                 Self::bfs(*v, &adj, &mut visited);
                 components += 1;
             }
         }
-        
+
         components
     }
 
-    fn bfs(start: u64, adj: &std::collections::HashMap<u64, Vec<u64>>, visited: &mut std::collections::HashSet<u64>) {
+    fn bfs(
+        start: u64,
+        adj: &std::collections::HashMap<u64, Vec<u64>>,
+        visited: &mut std::collections::HashSet<u64>,
+    ) {
         let mut queue = vec![start];
-        
+
         while let Some(v) = queue.pop() {
             if visited.contains(&v) {
                 continue;
             }
             visited.insert(v);
-            
+
             if let Some(neighbors) = adj.get(&v) {
                 for &n in neighbors {
                     if !visited.contains(&n) {
@@ -149,7 +153,7 @@ mod tests {
         // Simulate boid flocking: 100 agents, each connects to ~6 neighbors
         // After flock forms, there should be NO independent cycles (all agents connected)
         // But BEFORE flock forms, H1 > 0 (agents still forming)
-        
+
         let result = EmergenceDetector::detect(100, 500, 1);
         // 500 - 100 + 1 = 401 independent cycles
         assert_eq!(result.h1, 401);
@@ -163,6 +167,6 @@ mod tests {
         // H1 = 6144 - 1024 + 1 = 5121
         // But wait — for rigidity we need E = 2V - 3 = 2045
         let result = EmergenceDetector::detect(1024, 2045, 1);
-        assert_eq!(result.h1, 1022);  // H1 > 0 means emergence possible
+        assert_eq!(result.h1, 1022); // H1 > 0 means emergence possible
     }
 }

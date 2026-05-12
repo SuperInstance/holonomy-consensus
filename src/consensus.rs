@@ -16,11 +16,11 @@ impl HolonomyMatrix {
         let (sin, cos) = angle.sin_cos();
         let [x, y, z] = axis;
         let t = 1.0 - cos;
-        
+
         Self([
-            [t*x*x + cos, t*x*y - sin*z, t*x*z + sin*y],
-            [t*x*y + sin*z, t*y*y + cos, t*y*z - sin*x],
-            [t*x*z - sin*y, t*y*z + sin*x, t*z*z + cos],
+            [t * x * x + cos, t * x * y - sin * z, t * x * z + sin * y],
+            [t * x * y + sin * z, t * y * y + cos, t * y * z - sin * x],
+            [t * x * z - sin * y, t * y * z + sin * x, t * z * z + cos],
         ])
     }
 
@@ -59,7 +59,7 @@ impl HolonomyMatrix {
 pub struct ConsensusTile {
     pub id: u64,
     pub holonomy: HolonomyMatrix,
-    pub neighbors: Vec<u64>,  // Laman's theorem establishes edge count (E=2V-3) but places no upper bound on vertex degree
+    pub neighbors: Vec<u64>, // Laman's theorem establishes edge count (E=2V-3) but places no upper bound on vertex degree
     pub cycle_id: Option<u64>,
 }
 
@@ -86,9 +86,9 @@ pub struct HolonomyConsensus {
 
 impl HolonomyConsensus {
     pub fn new(tolerance: f64) -> Self {
-        Self { 
-            tile_index: HashMap::new(), 
-            tiles: Vec::new(), 
+        Self {
+            tile_index: HashMap::new(),
+            tiles: Vec::new(),
             tolerance,
         }
     }
@@ -113,13 +113,13 @@ impl HolonomyConsensus {
     /// O(L) — L = cycle length, not O(N)
     pub fn compute_cycle_holonomy(&self, cycle: &[u64]) -> HolonomyMatrix {
         let mut product = HolonomyMatrix::identity();
-        
+
         for &tile_id in cycle {
             if let Some(tile) = self.get_tile(tile_id) {
                 product = product.multiply(&tile.holonomy);
             }
         }
-        
+
         product
     }
 
@@ -128,14 +128,14 @@ impl HolonomyConsensus {
     pub fn check_consensus(&self) -> ConsensusResult {
         // Find all cycles in the tile network
         let cycles = self.find_all_cycles();
-        
+
         let mut max_deviation = 0.0f64;
         let mut faulty_tile = None;
-        
+
         for cycle in cycles {
             let holonomy = self.compute_cycle_holonomy(&cycle);
             let deviation = holonomy.deviation();
-            
+
             if deviation > max_deviation {
                 max_deviation = deviation;
                 if deviation > self.tolerance {
@@ -144,7 +144,7 @@ impl HolonomyConsensus {
                 }
             }
         }
-        
+
         ConsensusResult {
             is_consistent: max_deviation < self.tolerance,
             deviation: max_deviation,
@@ -152,7 +152,7 @@ impl HolonomyConsensus {
             information: if max_deviation > 0.0 {
                 -(max_deviation.ln())
             } else {
-                f64::INFINITY  // Perfect consistency = infinite information
+                f64::INFINITY // Perfect consistency = infinite information
             },
         }
     }
@@ -162,13 +162,13 @@ impl HolonomyConsensus {
     fn find_all_cycles(&self) -> Vec<Vec<u64>> {
         let mut cycles = Vec::new();
         let mut visited: HashSet<u64> = HashSet::new(); // O(1) lookup vs O(C) Vec::contains
-        
+
         for tile in &self.tiles {
             for &neighbor in &tile.neighbors {
                 let cycle = self.trace_cycle(tile.id, neighbor);
                 if !cycle.is_empty() {
                     // Use first+last as cycle fingerprint — O(1) hash vs Vec comparison
-                    let fingerprint = cycle[0] ^ (cycle[cycle.len()-1] << 16);
+                    let fingerprint = cycle[0] ^ (cycle[cycle.len() - 1] << 16);
                     if !visited.contains(&fingerprint) {
                         visited.insert(fingerprint);
                         cycles.push(cycle);
@@ -176,7 +176,7 @@ impl HolonomyConsensus {
                 }
             }
         }
-        
+
         cycles
     }
 
@@ -185,11 +185,14 @@ impl HolonomyConsensus {
     fn trace_cycle(&self, start: u64, neighbor: u64) -> Vec<u64> {
         let mut cycle = vec![start, neighbor];
         let mut current = neighbor;
-        
+
         // Simple cycle detection: follow neighbors until we return to start
         for _ in 0..self.tiles.len() {
             if let Some(next_neighbors) = self.get_neighbors(current) {
-                if let Some(&next) = next_neighbors.iter().find(|&&n| n != cycle[cycle.len()-2]) {
+                if let Some(&next) = next_neighbors
+                    .iter()
+                    .find(|&&n| n != cycle[cycle.len() - 2])
+                {
                     if next == start {
                         return cycle;
                     }
@@ -202,7 +205,7 @@ impl HolonomyConsensus {
                 return Vec::new();
             }
         }
-        
+
         Vec::new()
     }
 
@@ -210,23 +213,23 @@ impl HolonomyConsensus {
     fn locate_fault(&self, cycle: Vec<u64>, _bad_holonomy: HolonomyMatrix) -> Option<u64> {
         let mut left = 0usize;
         let mut right = cycle.len();
-        
+
         while right - left > 1 {
             let mid = (left + right) / 2;
-            
+
             let left_cycle: Vec<u64> = cycle[left..mid].to_vec();
             let right_cycle: Vec<u64> = cycle[mid..right].to_vec();
-            
+
             let left_hol = self.compute_cycle_holonomy(&left_cycle);
             let _right_hol = self.compute_cycle_holonomy(&right_cycle);
-            
+
             if left_hol.deviation() > self.tolerance {
                 right = mid;
             } else {
                 left = mid;
             }
         }
-        
+
         Some(cycle[left])
     }
 }

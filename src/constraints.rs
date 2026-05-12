@@ -36,9 +36,9 @@ pub struct HolonomyBounds {
 impl Default for HolonomyBounds {
     fn default() -> Self {
         Self {
-            max_deviation: 10,   // 0.01 (×1000) — very tight for safety
-            max_cycle_age: 100,  // recheck after 100 cycles
-            min_agreement: 7,    // need 7/12 agreeing neighbors (Laman threshold)
+            max_deviation: 10,  // 0.01 (×1000) — very tight for safety
+            max_cycle_age: 100, // recheck after 100 cycles
+            min_agreement: 7,   // need 7/12 agreeing neighbors (Laman threshold)
         }
     }
 }
@@ -156,10 +156,10 @@ mod tests {
         let deviations = [0.001, 0.005, 0.015, 0.5];
         let results = ConstraintResult::check_batch(&deviations, &bounds);
 
-        assert!(results[0].pass);   // 1 → within 10
-        assert!(results[1].pass);   // 5 → within 10
-        assert!(!results[2].pass);  // 15 → exceeds 10
-        assert!(!results[3].pass);  // 500 → saturated to 127
+        assert!(results[0].pass); // 1 → within 10
+        assert!(results[1].pass); // 5 → within 10
+        assert!(!results[2].pass); // 15 → exceeds 10
+        assert!(!results[3].pass); // 500 → saturated to 127
     }
 
     #[test]
