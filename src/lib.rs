@@ -37,6 +37,8 @@ pub mod cohomology;
 pub mod consensus;
 pub mod constraints;
 pub mod encoding;
+pub mod lifecycle;
+pub mod trust_lifecycle;
 pub mod zhc_gl9;
 
 pub use constraints::{sat8, ConstraintResult, HolonomyBounds};
@@ -44,6 +46,8 @@ pub use constraints::{sat8, ConstraintResult, HolonomyBounds};
 pub use cohomology::{EmergenceDetector, EmergenceResult};
 pub use consensus::{ConsensusResult, HolonomyConsensus};
 pub use encoding::{Pythagorean48, Vector48};
+pub use lifecycle::{LamportClock, RetractionReason, TrustState};
+pub use trust_lifecycle::{LifecycleError, TrustPool, TrustTile};
 
 /// The 48 exact directions on the unit circle (Pythagorean quantization)
 /// log2(48) = 5.585 bits — maximum information per bit for 16-bit integers

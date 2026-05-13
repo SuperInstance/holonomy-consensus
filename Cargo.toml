@@ -1,6 +1,6 @@
 [package]
 name = "holonomy-consensus"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Zero-holonomy consensus for fleet coordination — GL(9) intent alignment, eliminates voting/CRDTs/BFT"
 repository = "https://github.com/SuperInstance/holonomy-consensus"
