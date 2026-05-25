@@ -112,6 +112,17 @@ Fault found: D
 
 No blame voting. No reputation scores. The math identifies the outlier.
 
+## Related Projects
+
+| Repo | Language | What
+|------|----------|------
+| [fleet-math-c](https://github.com/SuperInstance/fleet-math-c) | C | SIMD-accelerated constraint math for PLATO tiles
+| [flux-engine-c](https://github.com/SuperInstance/flux-engine-c) | C | Single-header constraint engine — check, fracture, sediment
+| [flux-check-js](https://github.com/SuperInstance/flux-check-js) | TypeScript | Full constraint engine with fracture + sediment
+| [flux-lib-py](https://github.com/SuperInstance/flux-lib-py) | Python | Unified constraint engine library
+| [plato-types](https://github.com/SuperInstance/plato-types) | Python | PLATO tile lifecycle and Lamport clocks
+| [holonomy-harmony](https://github.com/SuperInstance/holonomy-harmony) | Python | Chord progression analysis via holonomy
+
 ## Running tests
 
 ```bash
